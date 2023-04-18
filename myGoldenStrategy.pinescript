@@ -1,0 +1,43 @@
+//@version=5
+strategy("SMA 50/200 Crossover Trading Strategy", overlay=true, initial_capital=1000, default_qty_type=strategy.percent_of_equity, default_qty_value=100)
+
+// Define the simple moving average function
+sma(src, length) =>
+    sum = 0.0
+    sum := sum + src
+    sum := sum - nz(src[length]) 
+    sma = sum / length
+
+// Define the crossover function
+crossover(x, y) => 
+    x[1] < y[1] and x > y
+
+// Define the crossunder function
+crossunder(x, y) =>
+    x[1] > y[1] and x < y
+
+// Define the fast and slow moving averages
+fastMA = sma(close, 50)
+slowMA = sma(close, 200)
+
+// Define the crossover and crossunder conditions
+crossoverCondition = crossover(fastMA, slowMA)
+crossunderCondition = crossunder(fastMA, slowMA)
+
+// Enter long and short positions
+if (crossoverCondition)
+    strategy.entry("Buy", strategy.long)
+
+if (crossunderCondition)
+    strategy.entry("Sell", strategy.short)
+
+// Exit positions on opposite cross
+if (crossunderCondition and strategy.position_size > 0)
+    strategy.close("Buy")
+
+if (crossoverCondition and strategy.position_size < 0)
+    strategy.close("Sell")
+
+// Plot the moving averages
+plot(fastMA, color=color.green, title="Fast MA")
+plot(slowMA, color=color.red, title="Slow MA")
